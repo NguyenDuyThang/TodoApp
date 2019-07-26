@@ -3,7 +3,7 @@ import * as actions from '../actions/TodoActions';
 const initialState = {
     todoList: [
         {
-            name: 'Do something',
+            name: 'Do somethingggggggggggggggggggggggggggggggggggggggggg',
             priority: 'Medium',
             dueTime: new Date("2019-07-26").toLocaleDateString()
         },
@@ -25,7 +25,7 @@ const initialState = {
         {
             name: 'Play tennis',
             priority: 'Low',
-            dueTime: new Date("2019-07-17").toLocaleDateString()
+            dueTime: new Date("2019-08-17").toLocaleDateString()
         },
         {
             name: 'Go to the market',
