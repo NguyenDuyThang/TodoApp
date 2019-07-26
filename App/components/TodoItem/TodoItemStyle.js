@@ -12,8 +12,11 @@ const styles = StyleSheet.create({
         elevation: 5,
         backgroundColor: 'white'
     },
+    close: {
+        alignItems: 'flex-end'
+    },
     title: {
-        flex: 4,
+        flex: 2,
         fontSize: 18,
         fontWeight: '500',
         color: 'black',
@@ -33,7 +36,8 @@ const styles = StyleSheet.create({
     },
     time: {
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        alignItems: 'center'
     },
     icon: {
         width: 20,
@@ -45,10 +49,15 @@ const styles = StyleSheet.create({
         height: 25,
         resizeMode: 'stretch'
     },
+    icon3: {
+        width: 30,
+        height: 30,
+        resizeMode: 'stretch'
+    },
     priorityText: {
-        flex: 1,
-        textAlign: 'right',
-        fontWeight: '500'
+        fontSize: 18,
+        fontWeight: '500',
+        marginBottom: Metrics.screenHeight * 0.03,
     }
 });
 

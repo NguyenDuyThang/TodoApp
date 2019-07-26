@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import styles from './TodoItemStyle';
 import Images from '../../themes/Images';
 
 const ToDoItem = (props) => {
+    const time = typeof(props.dueTime) == 'string' ? new Date(props.dueTime) : props.dueTime;
     return(
-        <View
+        <TouchableOpacity
             style = {styles.container}
+            onPress = {props._updateToDoItem}
         >
             <View
                 style = {styles.item}
@@ -16,17 +18,28 @@ const ToDoItem = (props) => {
                 >
                     {props.name}
                 </Text>
-                <Text
-                    style = {
-                        [
-                            styles.priorityText, 
-                            {color: props.backgroundColor}
-                        ]
-                    }
+                <TouchableOpacity
+                    style = {styles.close}
+                    onPress = {() => {
+                        props._confirmDelete(props.index);
+                    }}
                 >
-                    {props.priority}
-                </Text>
+                    <Image
+                        source = {Images.close}
+                        style = {styles.icon2}
+                    />
+                </TouchableOpacity>
             </View>
+            <Text
+                style = {
+                    [
+                        styles.priorityText, 
+                        {color: props._choosePriorityBackground(props.priority)}
+                    ]
+                }
+            >
+                {props.priority}
+            </Text>
             <View
                 style = {styles.time}
             >
@@ -40,15 +53,15 @@ const ToDoItem = (props) => {
                     <Text
                         style = {styles.dueTimeText}
                     >
-                        {props.dueTime}
+                        {time.toLocaleTimeString() + ', ' + time.toDateString()}
                     </Text>
                 </View>
                 <Image
-                    source = {props.statusIndicator}
-                    style = {styles.icon2}
+                    source = {props._chooseDueTimeIndicator(time)}
+                    style = {styles.icon3}
                 />
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
