@@ -6,17 +6,26 @@ import TodoItem from '../../containers/TodoItem/TodoItem';
 import ButtonCreate from '../../components/ButtonCreate/ButtonCreate';
 import ModalTodo from '../../components/ModalTodo/ModalTodo';
 import styles from './TodoListStyle';
+import firebase from 'react-native-firebase';
+import NetInfo from '@react-native-community/netinfo';
 
 class TodoListContainer extends React.Component {
     constructor(props){
         super(props);
+        this.collection = firebase.firestore().collection('todo-list');
         this.state = {
-            openModal: false
-        }
+            openModal: false,
+            refreshing: false
+        };
     }
 
     componentDidMount = () => {
+        this.unsubscribeNetInfo = NetInfo.addEventListener(this._handleNetInfo);
         this.props.updateTodoList([]);// for sorting todo list
+    }
+
+    componentWillUnmount = () => {
+        this.unsubscribeNetInfo();
     }
 
     static navigationOptions = () => ({
@@ -51,6 +60,74 @@ class TodoListContainer extends React.Component {
         )
     });
 
+    _syncOfflineListWithFirebase = async () => {
+        if(this.props.netInfo){
+            this.props.offlineList.forEach((value) => {
+                const firebaseItem = {
+                    id: value.id,
+                    name: value.name,
+                    dueTime: new Date(value.dueTime).getTime(),
+                    priority: value.priority
+                }
+                this.collection.add(firebaseItem);
+            });
+        }
+    }
+
+    _checkItemExisted = (item) => {
+        const itemExisted = this.props.todoList.find((value) => {
+            return value.id == item.id;
+        });
+
+        if(itemExisted)
+            return true;
+        return false;
+    }
+
+    _handleNetInfo = async (state) => {
+        if(state.isConnected){
+            this.setState({refreshing: true});
+            this.props.updateNetInfo(true);
+            await this._syncOfflineListWithFirebase();
+            this._refreshTodoList();
+            this.props.resetOfflineList();
+        }
+        else{
+            this.props.updateNetInfo(false);
+        }
+    }
+
+    _onRefresh = () => {
+        this.setState({refreshing: true});
+        if(this.props.netInfo){
+            this._refreshTodoList();
+        }
+    }
+
+    _refreshTodoList = () => {
+        if(this.unsubscribeSnap){
+            this.unsubscribeSnap();
+        }
+        this.unsubscribeSnap = this.collection.onSnapshot(this._queryFromFirebase);
+    }
+
+    _queryFromFirebase = (querySnap) => {
+        querySnap.forEach((doc) => {
+            const { id, dueTime, name, priority } = doc.data();
+            
+            const firebaseItem = {
+                id: id,
+                name: name,
+                dueTime: new Date(dueTime),
+                priority: priority
+            };
+            if(!this._checkItemExisted(firebaseItem)){
+                this.props.updateTodoList(firebaseItem);
+            }
+        });
+        this.setState({refreshing: false});
+    }
+
     _openModalTodo = () => {
         this.setState({openModal: !this.state.openModal});
     }
@@ -74,7 +151,7 @@ class TodoListContainer extends React.Component {
         );
     }
 
-    _updateTodoList = () => {
+    _createNewToDoItem = () => {
         let time = null, year = null, month = null, date = null, hour = null, minute = null;
         if(this.props.todoDueTime){
             time = typeof(this.props.todoDueTime) == 'string' ? new Date(this.props.todoDueTime) : this.props.todoDueTime;
@@ -93,12 +170,33 @@ class TodoListContainer extends React.Component {
         }
 
         const newItem = {
+            id: Date.now().toString(),
             name: this.props.todoName,
             priority: this.props.todoPriority,
             dueTime: new Date(year, month, date, hour, minute)
         };
 
+        return newItem;
+    }
+
+    _updateTodoList = () => {
+        const newItem = this._createNewToDoItem();
+
+        if(this.props.netInfo){//Add to firebase
+            const firebaseItem = {
+                id: newItem.id,
+                name: newItem.name,
+                dueTime: newItem.dueTime.getTime(),
+                priority: newItem.priority
+            };
+            this.collection.add(firebaseItem);
+        }
+        else{
+            this.props.updateOfflineList(newItem);
+        }
+
         this.props.updateTodoList(newItem);
+
         this._resetTodoItem();
         this._openModalTodo();
     }
@@ -143,6 +241,9 @@ class TodoListContainer extends React.Component {
                 {
                     text: 'Delete',
                     onPress: () => {
+                        if(this.props.netInfo){
+                            //this.collection.doc()
+                        }
                         this.props.deleteTodoItem(index);
                     }
                 }
@@ -171,6 +272,8 @@ class TodoListContainer extends React.Component {
                     showsVerticalScrollIndicator = {false}
                     keyExtractor = {(item, index) => index.toString()}
                     ListFooterComponent = {this._footer}
+                    refreshing = {this.state.refreshing}
+                    onRefresh = {this._onRefresh}
                 />}
                 <View
                     style = {styles.bottomDeco}
@@ -198,6 +301,8 @@ class TodoListContainer extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
+    netInfo: state.TodoReducer.netInfo,
+    offlineList: state.TodoReducer.offlineList,
     todoList: state.TodoReducer.todoList,
     todoName: state.TodoReducer.todoName,
     todoPriority: state.TodoReducer.todoPriority,
@@ -221,11 +326,20 @@ const mapDispatchToProps = (dispatch, props) => ({
     updateTodoHour: (hour) => {
         return dispatch(TodoActions.updateTodoHour(hour));
     },
+    updateOfflineList: (item) => {
+        return dispatch(TodoActions.updateOfflineList(item));
+    },
     updateTodoList: (item) => {
         return dispatch(TodoActions.updateTodoList(item));
     },
+    updateNetInfo: (netInfo) => {
+        return dispatch(TodoActions.updateNetInfo(netInfo));
+    },
     deleteTodoItem: (index) => {
         return dispatch(TodoActions.deleteTodoItem(index));
+    },
+    resetOfflineList: () => {
+        return dispatch(TodoActions.resetOfflineList());
     }
 });
 

@@ -1,6 +1,8 @@
 import * as actions from '../actions/TodoActions';
 
 const initialState = {
+    netInfo: true,
+    offlineList: [], //For syncing with firebase when reconnect
     todoList: [],
     todoIndex: -1,
     todoName: null, //for creating, updating
@@ -11,6 +13,12 @@ const initialState = {
 
 const TodoReducer = (state = initialState, action) => {
     switch(action.type){
+        case actions.UPDATE_OFFLINE_LIST: {
+            return {
+                ...state,
+                offlineList: state.offlineList.concat(action.data)
+            }
+        }
         case actions.UPDATE_TODO_LIST: {
             let newList = [...state.todoList];
 
@@ -56,7 +64,13 @@ const TodoReducer = (state = initialState, action) => {
             return {
                 ...state,
                 todoDueHour: action.data
-            }
+            };
+        }
+        case actions.UPDATE_NET_INFO: {
+            return {
+                ...state,
+                netInfo: action.data
+            };
         }
         case actions.DELETE_TODO_ITEM: {
             const index = action.data;
@@ -67,6 +81,12 @@ const TodoReducer = (state = initialState, action) => {
             return {
                 ...state,
                 todoList: newList
+            };
+        }
+        case actions.RESET_OFFLINE_LIST: {
+            return {
+                ...state,
+                offlineList: []
             };
         }
         default: {
