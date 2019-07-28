@@ -352,6 +352,7 @@ class TodoListContainer extends React.Component {
                     />
                     <ModalTodo
                         openModal = {this.state.openModal}
+                        buttonTitle = {this.props.todoIndex != -1 ? 'Update' : 'Create'}
                         todoName = {this.props.todoName}
                         todoPriority = {this.props.todoPriority}
                         todoDueTime = {this.props.todoDueTime}

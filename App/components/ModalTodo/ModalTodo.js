@@ -70,7 +70,7 @@ const ModalTodo = (props) => {
                     <Text
                         style = {styles.createText}
                     >
-                        Create
+                        {props.buttonTitle}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity

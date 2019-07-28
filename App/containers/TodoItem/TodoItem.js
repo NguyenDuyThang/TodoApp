@@ -60,12 +60,12 @@ class TodoItemContainer extends React.Component {
     }
 
     _updateToDoItem = () => {
-        this.props._openModalTodo();
         this.props.updateToDoName(this.props.item.name);
         this.props.updateToDoPriority(this.props.item.priority);
         this.props.updateToDoDueTime(this.props.item.dueTime);
         this.props.updateTodoHour(this.props.item.dueTime);
         this.props.updateTodoIndex(this.props.index);
+        this.props._openModalTodo();
     }
 
     render(){
