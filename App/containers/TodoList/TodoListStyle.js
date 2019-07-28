@@ -31,6 +31,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: 'black',
         fontSize: 20
+    },
+    refreshing: {
+        flex: 1
     }
 });
 

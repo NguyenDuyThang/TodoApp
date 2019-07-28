@@ -103,7 +103,7 @@ const mapDispatchToProps = ( dispatch, props ) => ({
     },
     updateTodoHour: (hour) => {
         return dispatch(TodoActions.updateTodoHour(hour));
-    },
+    }
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TodoItemContainer);

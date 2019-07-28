@@ -2,7 +2,8 @@ import * as actions from '../actions/TodoActions';
 
 const initialState = {
     netInfo: true,
-    offlineList: [], //For syncing with firebase when reconnect
+    offlineList: [], //For syncing new todo items with firebase when reconnect
+    deleteOfflineList: [], //For syncing deleted todo items with firebase when reconnect
     todoList: [],
     todoIndex: -1,
     todoName: null, //for creating, updating
@@ -13,12 +14,6 @@ const initialState = {
 
 const TodoReducer = (state = initialState, action) => {
     switch(action.type){
-        case actions.UPDATE_OFFLINE_LIST: {
-            return {
-                ...state,
-                offlineList: state.offlineList.concat(action.data)
-            }
-        }
         case actions.UPDATE_TODO_LIST: {
             let newList = [...state.todoList];
 
@@ -26,7 +21,7 @@ const TodoReducer = (state = initialState, action) => {
                 newList.splice(state.todoIndex, 1, action.data);
             }
             else{
-                newList = newList.concat(action.data);
+                newList = newList.concat(action.data);  
             }
 
             newList.sort(sortTodoList);
@@ -34,6 +29,26 @@ const TodoReducer = (state = initialState, action) => {
             return {
                 ...state,
                 todoList: newList
+            };
+        }
+        case actions.UPDATE_OFFLINE_LIST: {
+            //remove existed item to add new item because offline list has both updated and created items  
+            const newItem = action.data;
+            let newOfflineList = state.offlineList.filter((value) => {
+                return value.id != newItem.id;
+            });
+
+            newOfflineList = newOfflineList.concat(newItem);
+
+            return {
+                ...state,
+                offlineList: newOfflineList
+            };
+        }
+        case actions.UPDATE_DELETE_OFFLINE_LIST: {
+            return {
+                ...state,
+                deleteOfflineList: state.deleteOfflineList.concat(action.data)
             };
         }
         case actions.UPDATE_TODO_INDEX: {
@@ -87,6 +102,18 @@ const TodoReducer = (state = initialState, action) => {
             return {
                 ...state,
                 offlineList: []
+            };
+        }
+        case actions.RESET_TODO_LIST: {
+            return {
+                ...state,
+                todoList: []
+            };
+        }
+        case actions.RESET_DELETE_OFFLINE_LIST: {
+            return {
+                ...state,
+                deleteOfflineList: []
             };
         }
         default: {
